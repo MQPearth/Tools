@@ -11,3 +11,7 @@
 > 定时关机
 
 ![timerShutdown](img/timerShutdown.png)
+
+
+[链接](https://pan.baidu.com/s/1C3Sq7tw3PxJnTCVOvwrtiw) ````6666````
+
