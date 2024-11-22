@@ -16,9 +16,14 @@ int rand(const int max) {
 }
 
 void rand_num(const int max) {
+    const int max_digits = static_cast<int>(std::log10(max - 1)) + 2;
+    const std::string clear_space(max_digits, ' ');
+
     for (int i = 0; i < 30000; ++i) {
         std::cout << rand(max) << std::flush;
         std::this_thread::sleep_for(std::chrono::microseconds(50));
+        std::cout << "\r";
+        std::cout << clear_space;
         std::cout << "\r";
     }
     std::cout << rand(max) << std::endl << std::flush;
