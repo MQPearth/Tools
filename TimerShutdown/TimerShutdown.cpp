@@ -1,7 +1,16 @@
 ﻿#include "TimerShutdown.h"
+#include "configmanager.h"
 #include <QLabel>
 #include <QString>
+#include <QDialog>
+#include <QFormLayout>
+#include <QLineEdit>
+#include <QDialogButtonBox>
+#include <QMessageBox>
+#include <QtNetwork/QHostAddress>
+
 #include "iostream"
+
 
 
 TimerShutdown::TimerShutdown()
@@ -13,6 +22,7 @@ TimerShutdown::TimerShutdown()
 	timer = new QTimer(this);
 
 	connect(timer, &QTimer::timeout, this, &TimerShutdown::doTimer);
+	connect(ui.lanAction, &QAction::triggered, this, &TimerShutdown::doLanAction);
 
 	timer->setInterval(1000);
 }
@@ -107,4 +117,103 @@ void TimerShutdown::handleStopButton() {
 		timer->start();
 		stopButton->setText("停止");
 	}
+}
+
+
+void TimerShutdown::doLanAction() {
+	QDialog dialog(this);
+	dialog.setWindowTitle("设置监听地址");
+	dialog.setMinimumWidth(240);
+
+	QFormLayout formLayout(&dialog);
+
+	QLineEdit* ipEdit = new QLineEdit(&dialog);
+	ipEdit->setPlaceholderText("示例: 192.168.1.42:8080");
+	
+
+	formLayout.addRow("<p>地址: </p>", ipEdit);
+
+	if (ipAddr.isEmpty()) {
+		ipEdit->setText(ConfigManager::getNotifyUrl());
+	}
+	else {
+		ipEdit->setText(ipAddr);
+	}
+
+
+	QDialogButtonBox buttonBox(Qt::Horizontal, &dialog);
+
+	QPushButton* enableButton = buttonBox.addButton("启用", QDialogButtonBox::AcceptRole);
+	QPushButton* disableButton = buttonBox.addButton("禁用", QDialogButtonBox::RejectRole);
+	QPushButton* cancelButton = buttonBox.addButton(QDialogButtonBox::Cancel);
+	cancelButton->setText("取消");
+
+	QString lanText = ui.lanAction->text();
+	if (lanText == "局域网监听[已启用]") {
+		enableButton->setDisabled(true);
+		disableButton->setDisabled(false);
+	}
+	else {
+		enableButton->setDisabled(false);
+		disableButton->setDisabled(true);
+	}
+
+	formLayout.addRow(&buttonBox);
+
+	connect(enableButton, &QPushButton::clicked, &dialog, &QDialog::accept);
+	connect(disableButton, &QPushButton::clicked, this, [this, &dialog]() {
+		if (server != nullptr) {
+			server->stopServer();
+			delete server;
+			server = nullptr;
+		}
+		dialog.reject();
+		ui.lanAction->setText("局域网监听[未启用]");
+		});
+	connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
+
+	while (1 && dialog.exec() == QDialog::Accepted) {
+
+		QString ip = ipEdit->text();
+		
+		if (ip.isEmpty()) {
+			ipEdit->setPlaceholderText("地址是必填项");
+			continue;
+		}
+		QStringList parts = ip.trimmed().split(":");
+		qDebug() << parts.size();
+		if (parts.size() != 2) {
+			ipEdit->setText("");
+			ipEdit->setPlaceholderText("请输入正确的地址 (ip:端口)");
+			continue;
+		}
+
+		QString ipAddress = parts[0];
+		quint16 port = parts[1].toUShort();
+
+		if (server != nullptr) {
+			server->stopServer();
+			delete server;
+		}
+
+		server = new HttpServer();
+		QHostAddress address = QHostAddress(ipAddress);
+
+		if (!server->listen(address, port)) {
+			QMessageBox msgBox(this);
+			msgBox.setWindowTitle("错误");
+			msgBox.setText("端口已被使用或程序未被授权访问网络");
+			msgBox.exec();
+			continue;
+		}
+
+		ui.lanAction->setText("局域网监听[已启用]");
+
+		ipAddr = ip.trimmed();
+		ConfigManager::setNotifyUrl(ipAddr);
+		ConfigManager::saveConfig();
+		break;
+	}
+
+		
 }

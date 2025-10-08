@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>定时关机</string>
+   <string>一个关机</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -21,6 +21,12 @@
    <layout class="QGridLayout" name="gridLayout_3">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout">
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>6</number>
+      </property>
       <item row="0" column="0">
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
@@ -98,12 +104,24 @@
     </property>
     <addaction name="actionBuild_By_thy"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>远程关机</string>
+    </property>
+    <addaction name="lanAction"/>
+   </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionBuild_By_thy">
    <property name="text">
     <string>Build By thy</string>
+   </property>
+  </action>
+  <action name="lanAction">
+   <property name="text">
+    <string>局域网监听[未启用]</string>
    </property>
   </action>
  </widget>

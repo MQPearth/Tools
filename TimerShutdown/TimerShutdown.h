@@ -4,6 +4,7 @@
 #include "ui_TimerShutdown.h"
 #include <QTimer>
 #include <QLabel>
+#include "HttpServer.h"
 
 class TimerShutdown : public QMainWindow
 {
@@ -13,12 +14,15 @@ public:
     TimerShutdown();
 
     void updateLabel();
+
 public slots:
     void clickButton();
 
     void handleStopButton();
 
     void doTimer();
+
+    void doLanAction();
 
 private:
     int hour = 0;
@@ -29,6 +33,9 @@ private:
     QTimer* timer = nullptr;
 
     int totalSec = 0;
+
+    QString ipAddr;
+    HttpServer* server = nullptr;
 
     Ui::TimerShutdownClass ui;
     QPushButton* stopButton = nullptr;
